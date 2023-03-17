@@ -75,4 +75,9 @@
 (package! clippy)
 (package! minimap)
 (package! olivetti)
-
+(package! prettier-js)
+(package! vue-mode)
+(package! auto-complete)
+(package! rjsx-mode)
+(package! ascii-art-to-unicode)
+(package! company-tabnine :recipe (:host github :repo "TommyX12/company-tabnine"))
