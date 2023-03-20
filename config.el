@@ -389,6 +389,14 @@
 ;;;;; PASSWORD STORE (default gnu pass)
 (use-package! password-store)
 
+(use-package telega
+  :load-path  "~/telega.el"
+  :commands (telega)
+  :defer t)
+
+;;;;;;; RUN telega using a docker instance
+;;(setq telega-use-docker t)
+
 ;;;;;;;;; EDNC  notifications in EMACS
 (ednc-mode 1)
 
