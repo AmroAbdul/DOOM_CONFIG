@@ -80,4 +80,10 @@
 (package! auto-complete)
 (package! rjsx-mode)
 (package! ascii-art-to-unicode)
-(package! company-tabnine :recipe (:host github :repo "TommyX12/company-tabnine"))
+(package! company-tabnine)
+(package! reverse-im)
+(package! copilot
+  :recipe (:host github :repo "zerolfx/copilot.el" :files ("*.el" "dist")))
+(package! eaf
+  :recipe (:host github :repo "manateelazycat/emacs-application-framework" :branch "master"))
+(package! fzf)                          ;

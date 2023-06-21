@@ -1,44 +1,11 @@
-;;; $DOOMDIR/config.el -*- lexical-binding: t; -*-
+;;;; $DOOMDIR/config.el -*- lexical-binding: t; -*-
 
 ;; Place your private configuration here! Remember, you do not need to run 'doom
 ;; sync' after modifying this file!
 
-;;;;;;;;;;; START PAGE
-;;(setq initial-buffer-choice "~/.config/doom/start.org")
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (define-minor-mode start-mode                                                           ;;
-;;   "Provide functions for custom start page."                                            ;;
-;;   :lighter " start"                                                                     ;;
-;;   :keymap (let ((map (make-sparse-keymap)))                                             ;;
-;;           ;;(define-key map (kbd "M-z") 'eshell)                                        ;;
-;;             (evil-define-key 'normal start-mode-map                                     ;;
-;;               (kbd "1") '(lambda () (interactive) (find-file "~/.config/doom/config.org"))   ;;
-;;               (kbd "2") '(lambda () (interactive) (find-file "~/.config/doom/init.el"))      ;;
-;;               (kbd "3") '(lambda () (interactive) (find-file "~/.config/doom/packages.el"))) ;;
-;;           map))                                                                         ;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (setq initial-buffer-choice "~/.config/doom/dashboard.org")                                                     ;;
-;;                                                                                                                 ;;
-;; (define-minor-mode start-mode                                                                                   ;;
-;;   "Provide functions for custom start page."                                                                    ;;
-;;   :lighter " start"                                                                                             ;;
-;;   :keymap (let ((map (make-sparse-keymap)))                                                                     ;;
-;;           ;;(define-key map (kbd "M-z") 'eshell)                                                                ;;
-;;             (evil-define-key 'normal start-mode-map                                                             ;;
-;;               (kbd "1") '(lambda () (interactive) (find-file "~/.config/doom/dashboard.org"))                        ;;
-;;               (kbd "2") '(lambda () (interactive) (find-file "~/.config/doom/init.el"))                              ;;
-;;               (kbd "3") '(lambda () (interactive) (find-file "~/.config/doom/packages.el")))                         ;;
-;;           map))                                                                                                 ;;
-;;                                                                                                                 ;;
-;; (add-hook 'start-mode-hook 'read-only-mode) ;; make start.org read-only; use 'SPC t r' to toggle off read-only. ;;
-;; (provide 'start-mode)                                                                                           ;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;; BOOKMARKS location 
-(setq bookmark-default-file "~/Documents/emacs_bookmarks<F9>")
+(setq bookmark-default-file "~/Documents/emacs_bookmarks")
 ;;;; BOOKMARKS KEYBNDS
 
 (map! :leader
@@ -48,6 +15,7 @@
        :desc "Delete bookmark"                         "M" #'bookmark-set
        :desc "Save current bookmarks to bookmark file" "w" #'bookmark-save))
 ;;;; BUFFERS
+;; (setq initial-scratch-message nil)
 
 
 (global-auto-revert-mode 1)
@@ -149,8 +117,13 @@
         :desc "Insert todays date" "t" #'dt/insert-todays-date))
 ;;;; BEACON
 (beacon-mode 1)
-(setq beacon-color "#0ff")
+(setq beacon-color "#F7F9FF")
 
+;; (use-package! cua
+;; (CUA-mode t)
+;;;; Multi Cursor support for Emacs
+;; (require 'evil-multiedit)
+;; (evil-multiedit-default-keybinds)
 ;;;;;;; TABS in EMACS (need to enable/uncomment tabs in init.el)
 (setq centaur-tabs-set-bar 'over
       centaur-tabs-set-icons t
@@ -209,7 +182,39 @@
       doom-modeline-persp-name t  ;; adds perspective name to modeline
       doom-modeline-persp-icon t) ;; adds folder icon next to persp name
 
+
+
+
+
+;; Needed for `:after char-fold' to work
+(use-package char-fold
+  :custom
+  (char-fold-symmetric t)
+  (search-default-mode #'char-fold-to-regexp))
+
+(use-package reverse-im
+  :ensure t ; install `reverse-im' using package.el
+  :demand t ; always load it
+  :after char-fold ; but only after `char-fold' is loaded
+  :bind
+  ("M-T" . reverse-im-translate-word) ; fix a word in wrong layout
+  :custom
+  (reverse-im-char-fold t) ; use lax matching
+  (reverse-im-read-char-advice-function #'reverse-im-read-char-include)
+  (reverse-im-input-methods '("arabic")) ; translate these methods
+  :config
+  (reverse-im-mode t)) ; turn the mode on
+
+
+
+
+
 ;;;;;; NEOTREE
+
+
+
+
+
 
 (after! neotree
   (setq neo-smart-open t
@@ -219,6 +224,21 @@
 (map! :leader
       :desc "Toggle neotree file viewer" "t n" #'neotree-toggle
       :desc "Open directory in neotree"  "d n" #'neotree-dir)
+;; (setq x-select-enable-clipboard nil)
+
+(defun paste-from-clipboard ()
+  (interactive)
+  (setq x-select-enable-clipboard t)
+  (yank)
+  (setq x-select-enable-clipboard nil))
+(defun copy-to-clipboard()
+  (interactive)
+  (setq x-select-enable-clipboard t)
+  (kill-ring-save (region-beginning) (region-end))
+  (setq x-select-enable-clipboard nil))
+(map! :leader
+      :desc "Copy to clipboard" "c 1" #'copy-to-clipboard
+      :desc "Paste from clipboard" "c 2" #'paste-from-clipboard)
 
 
 ;;;;;;;;;;;;;;;;; RANDOM SPLASH
@@ -232,13 +252,52 @@
 ;;         (concat doom-private-dir "splash/"                           ;;
 ;;                 (nth (random (length alternatives)) alternatives)))) ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(setq fancy-splash-image (expand-file-name "splash/doom-emacs-arabic-logo.svg" doom-private-dir))
-
+;; (setq fancy-splash-image (expand-file-name "splash/doom-emacs-arabic-logo.svg" doom-private-dir)) ;
+;; (remove-hook '+doom-dashboard-functions #'doom-dashboard-widget-shortmenu)
+(add-hook! '+doom-dashboard-functions :append
+  (insert  (+doom-dashboard--center +doom-dashboard--width "مشغل ب ايماكس")))
+;; (assoc-delete-all "Open project" +doom-dashboard-menu-sections)
+;; (add-to-list '+doom-dashboard-menu-sections
+;;              '("Add journal entry"
+;;                :icon (all-the-icons-octicon "calendar" :face 'doom-dashboard-menu-title)
+;;                :when (featurep! :lang org +journal)
+;;                :face (:inherit (doom-dashboard-menu-title bold))
+;;                :action org-journal-new-entry))
+(defun my-weebery-is-always-greater ()
+  (let* ((banner '(
+       "           ▄ ▄                   "
+       "       ▄   ▄▄▄     ▄ ▄▄▄ ▄ ▄     "
+       "       █ ▄ █▄█ ▄▄▄ █ █▄█ █ █     "
+       "    ▄▄ █▄█▄▄▄█ █▄█▄█▄▄█▄▄█ █     "
+       "  ▄ █▄▄█ ▄ ▄▄ ▄█ ▄▄▄▄▄▄▄▄▄▄▄▄▄▄  "
+       "  █▄▄▄▄ ▄▄▄ █ ▄ ▄▄▄ ▄ ▄▄▄ ▄ ▄ █ ▄"
+       "▄ █ █▄█ █▄█ █ █ █▄█ █ █▄█ ▄▄▄ █ █"
+       "█▄█ ▄ █▄▄█▄▄█ █ ▄▄█ █ ▄ █ █▄█▄█ █"
+       "    █▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄█ █▄█▄▄▄█    "
+                   ))
+         (longest-line (apply #'max (mapcar #'length banner))))
+    (put-text-property
+     (point)
+     (dolist (line banner (point))
+       (insert (+doom-dashboard--center
+                +doom-dashboard--width
+                (concat line (make-string (max 0 (- longest-line (length line))) 32)))
+               "\n"))
+     'face 'doom-dashboard-banner)))
+(custom-set-faces!
+  '(doom-dashboard-banner :foreground "red" :background "#000000" :weight bold)
+  '(doom-dashboard-footer :foreground "blue" :background "#431234" font-lock-constant-face)
+  '(doom-dashboard-footer-icon :inherit all-the-icons-red)
+  '(doom-dashboard-loaded :inherit font-lock-warning-face)
+  '(doom-dashboard-menu-desc :inherit font-lock-string-face)
+  '(doom-dashboard-menu-title :inherit font-lock-function-name-face))
+(setq +doom-dashboard-ascii-banner-fn #'my-weebery-is-always-greater)
 
 ;;battery
-(unless (equal "Battery status not available"
-               (battery))
-  (display-battery-mode 1))                           ; On laptops it's nice to know how much power you have
+;; (unless (equal "Battery status not available"
+;;                (battery))
+;;   (display-battery-mode 1))
+                                        ; On laptops it's nice to know how much power you have
 
 
 
@@ -286,11 +345,26 @@
 ;; There are two ways to load a theme. Both assume the theme is installed and
 ;; available. You can either set `doom-theme' or manually load a theme with the
 ;; `load-theme' function. This is the default:
-(setq doom-theme 'doom-dracula)
+(setq doom-theme 'doom-xtheme)
 (map! :leader
       :desc "Load new theme" "h t" #'counsel-load-theme)
 
 
+;;;; FZF for Emacs
+;; use-package fzf
+;;   :bind
+;;     ;; Don't forget to set keybinds!
+;;   :config
+;;   (setq fzf/args "-x --color bw --print-query --margin=1,0 --no-hscroll"
+;;         fzf/executable "fzf"
+;;         fzf/git-grep-args "-i --line-number %s"
+;;         ;; command used for `fzf-grep-*` functions
+;;         ;; example usage for ripgrep:
+;;         ;; fzf/grep-command "rg --no-heading -nH"
+;;         fzf/grep-command "grep -nrH"
+;;         ;; If nil, the fzf buffer will appear at the top of the window
+;;         fzf/position-bottom t
+;;         fzf/window-height 15))
 
 ;; This determines the style of line numbers in effect. If set to `nil', line
 ;; numbers are disabled. For relative line numbers, set this to `relative'.
@@ -389,11 +463,21 @@
 ;;;;; PASSWORD STORE (default gnu pass)
 (use-package! password-store)
 
-(use-package telega
-  :load-path  "~/telega.el"
-  :commands (telega)
-  :defer t)
+;; (use-package telega
+;;   :load-path  "~/telega.el"
+;;   :commands (telega)
+;;   :defer t)
 
+
+;;; RTL Support
+;; (add-hook 'telega-chat-mode-hook
+;;           (lambda ()
+;;             (setq bidi-paragraph-start-re "^")
+;;             (setq bidi-paragraph-separate-re "^"))
+;;           t)
+;; (setq-default bidi-display-reordering t
+;;               bidi-paragraph-direction nil
+;;               bidi-inhibit-bpa nil)
 ;;;;;;; RUN telega using a docker instance
 ;;(setq telega-use-docker t)
 
@@ -418,7 +502,8 @@
   (kbd "e")   'ednc-toggle-expanded-view)
 
 ;;; EMACS WORLD WEB EWW
-(setq browse-url-browser-function 'eww-browse-url)
+(setq browse-url-browser-function 'browse-url-generic
+      browse-url-generic-program "brave")
 (map! :leader
       :desc "Search web for text between BEG/END"
       "s w" #'eww-search-words
@@ -452,15 +537,11 @@
   "Initialize my package"
   (use-package vue-mode))
 
+;; (after! company
+;;   (setq +lsp-company-backends '(company-tabnine :separate company-capf company-yasnippet))
+;;   (setq company-show-numbers t)
+;;   (setq company-idle-delay 0)
 
-(require 'company-tabnine)
-(add-to-list 'company-backends #'company-tabnine)
-;; tabnine autocmplete
-(after! company
-  (setq +lsp-company-backends '(company-tabnine :separate company-capf company-yasnippet))
-  (setq company-show-quick-access t)
-  (setq company-idle-delay 0)
-)
 
 (add-hook 'mmm-mode-hook
           (lambda ()
@@ -469,10 +550,25 @@
 ;;(progn (ac-config-default)
 ;;(global-auto-complete-mode t)))
 ;;(setq ac-auto-show-menu 0.2)
+;; accept completion from copilot and fallback to company
+(use-package! copilot
+  :hook (prog-mode . copilot-mode)
+  :bind (("C-TAB" . 'copilot-accept-completion-by-word)
+         ("C-<tab>" . 'copilot-accept-completion-by-word)
+         :map copilot-completion-map
+         ("<tab>" . 'copilot-accept-completion)
+         ("TAB" . 'copilot-accept-completion)))
 
-
-
-;;;;;;;;;;;;;;;;;;;;;; ORG MODE
+;; (let ((last-nonmenu-event nil)
+;;       (use-dialog-box t)
+;;       (use-file-dialog t))
+;;   (call-interactively #'find-file))
+(defun vf-find-file-with-dialog ()
+  (interactive)
+  ;; `flet' is deprecated, but I don't know enough Emacs Lisp
+  ;; to make the non-deprecated `cl-flet' work here.
+  (flet ((next-read-file-uses-dialog-p () t))
+    (call-interactively 'find-file)));;;;;;;;;;;;;;;;;;;;;; ORG MODE
 ;;;;TODO
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (map! :leader                                                                                                                                ;;
@@ -853,3 +949,38 @@
 ;;        :desc "Capture to node"     "n" #'org-roam-capture                                                                                    ;;
 ;;        :desc "Toggle roam buffer"  "r" #'org-roam-buffer-toggle))                                                                            ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;;;;;;;;;; START PAGE
+;;(setq initial-buffer-choice "~/.config/doom/start.org")
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (define-minor-mode start-mode                                                           ;;
+;;   "Provide functions for custom start page."                                            ;;
+;;   :lighter " start"                                                                     ;;
+;;   :keymap (let ((map (make-sparse-keymap)))                                             ;;
+;;           ;;(define-key map (kbd "M-z") 'eshell)                                        ;;
+;;             (evil-define-key 'normal start-mode-map                                     ;;
+;;               (kbd "1") '(lambda () (interactive) (find-file "~/.config/doom/config.org"))   ;;
+;;               (kbd "2") '(lambda () (interactive) (find-file "~/.config/doom/init.el"))      ;;
+;;               (kbd "3") '(lambda () (interactive) (find-file "~/.config/doom/packages.el"))) ;;
+;;           map))                                                                         ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (setq initial-buffer-choice "~/.config/doom/dashboard.org")
+;;                                                                                                                 ;;
+;; (define-minor-mode start-mode                                                                                   ;;
+;;   "Provide functions for custom start page."                                                                    ;;
+;;   :lighter " start"                                                                                             ;;
+;;   :keymap (let ((map (make-sparse-keymap)))                                                                     ;;
+;;           ;;(define-key map (kbd "M-z") 'eshell)                                                                ;;
+;;             (evil-define-key 'normal start-mode-map                                                             ;;
+;;               (kbd "1") '(lambda () (interactive) (find-file "~/.config/doom/dashboard.org"))                        ;;
+;;               (kbd "2") '(lambda () (interactive) (find-file "~/.config/doom/init.el"))                              ;;
+;;               (kbd "3") '(lambda () (interactive) (find-file "~/.config/doom/packages.el")))                         ;;
+;;           map))                                                                                                 ;;
+;;                                                                                                                 ;;
+;; (add-hook 'start-mode-hook 'read-only-mode) ;; make start.org read-only; use 'SPC t r' to toggle off read-only. ;;
+;; (provide 'start-mode)
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
